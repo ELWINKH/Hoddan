@@ -1,0 +1,93 @@
+const menu = [
+    { name: 'Melissa-Special', price: 6 },
+    { name: 'Elias-Special', price: 8 },
+    { name: 'Dricka', price: 10 },
+    { name: 'Toast med ost', price: 10 },
+    { name: 'Toast med ost och skinka', price: 15 }
+];
+
+let cart = [];
+let orders = [];
+
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const name = document.getElementById('name').value;
+    const role = document.getElementById('role').value;
+
+    if (role === 'elev') {
+        document.getElementById('login-section').classList.add('hidden');
+        document.getElementById('elev-section').classList.remove('hidden');
+        loadMenu();
+    } else if (role === 'hoddan') {
+        document.getElementById('login-section').classList.add('hidden');
+        document.getElementById('hoddan-section').classList.remove('hidden');
+        loadOrders();
+    }
+});
+
+function loadMenu() {
+    const menuDiv = document.getElementById('menu');
+    menuDiv.innerHTML = '';
+    menu.forEach((item, index) => {
+        const button = document.createElement('button');
+        button.textContent = `${item.name} - ${item.price} kr`;
+        button.addEventListener('click', () => addToCart(index));
+        menuDiv.appendChild(button);
+    });
+}
+
+function addToCart(index) {
+    cart.push(menu[index]);
+    updateCart();
+}
+
+function updateCart() {
+    const cartDiv = document.getElementById('cart');
+    cartDiv.innerHTML = '';
+    cart.forEach((item, index) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.textContent = `${item.name} - ${item.price} kr`;
+        const removeButton = document.createElement('button');
+        removeButton.textContent = 'Ta bort';
+        removeButton.addEventListener('click', () => {
+            cart.splice(index, 1);
+            updateCart();
+        });
+        itemDiv.appendChild(removeButton);
+        cartDiv.appendChild(itemDiv);
+    });
+
+    document.getElementById('submitOrder').classList.toggle('hidden', cart.length === 0);
+}
+
+document.getElementById('submitOrder').addEventListener('click', function() {
+    if (cart.length > 0) {
+        const order = {
+            items: [...cart],
+            name: document.getElementById('name').value,
+            status: 'I kö'
+        };
+        orders.push(order);
+        cart = [];
+        updateCart();
+        alert(`Din beställning har lagts till i kön.`);
+        loadOrders();
+    }
+});
+
+function loadOrders() {
+    const ordersDiv = document.getElementById('orders');
+    ordersDiv.innerHTML = '';
+    orders.forEach((order, index) => {
+        const orderDiv = document.createElement('div');
+        orderDiv.textContent = `${order.name}: ${order.items.map(item => item.name).join(', ')} - Status: ${order.status}`;
+        const completeButton = document.createElement('button');
+        completeButton.textContent = 'Klar';
+        completeButton.addEventListener('click', () => {
+            order.status = 'Klar att hämtas';
+            loadOrders();
+        });
+        orderDiv.appendChild(completeButton);
+        ordersDiv.appendChild(orderDiv);
+    });
+}
